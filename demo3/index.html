@@ -1,0 +1,99 @@
+<html>
+    <head>
+        <title>Threejs</title>
+        <script src="../three.js"></script>
+        <script src="OrbitControls.js"></script>
+        <style>
+            body { margin: 0; }
+        </style>
+    </head>
+    <body>
+    </body>
+    <script>
+    var scene, camera, renderer;
+    var geometry, material, mesh;
+    var cameraControls;
+    
+
+    var ww = window.innerWidth,
+        wh = window.innerHeight;
+
+    var mouse = {
+        x: 0,
+        y: 0
+    };
+
+    function createParticle() {
+        var geometry = new THREE.Geometry();
+        var vertices = new THREE.Vector3(
+            mouse.x,
+            mouse.y, -10
+        );
+        geometry.vertices.push(vertices);
+        var material = new THREE.PointCloudMaterial({
+            color: 0Xffffff,
+            size: 3,
+            transparent: true,
+            sizeAttenuation: false
+        });
+        particle = new THREE.PointCloud(geometry, material);
+        particle.speed = Math.random() / 10 + 0.002
+        particle.direction = {
+            x: (Math.random() - .5) * ww * 2,
+            y: (Math.random() - .5) * wh * 2,
+            z: 1000
+        };
+
+        particles.add(particle);
+    }
+
+    var animate = function() {
+        requestAnimationFrame(animate);
+
+        createParticle();
+        for (var i = 0, j = particles.children.length; i < j; i++) {
+            var particle = particles.children[i];
+            particle.geometry.vertices[0].x += (particle.direction.x - particle.geometry.vertices[0].x) * particle.speed;
+            particle.geometry.vertices[0].y += (particle.direction.y - particle.geometry.vertices[0].y) * particle.speed;
+            particle.geometry.vertices[0].z += (particle.direction.z - particle.geometry.vertices[0].z) * particle.speed;
+            particle.material.opacity -= .005
+            particle.geometry.verticesNeedUpdate = true;
+            if (particle.material.opacity < .05) {
+                particles.remove(particle);
+                i--;
+                j--;
+            }
+        }
+
+        renderer.render(scene, camera);
+    };
+    function init() {
+
+        scene = new THREE.Scene();
+        scene.background = new THREE.CubeTextureLoader()
+                    .setPath( 'bg/' )
+                    .load( [ 'px.jpg', 'nx.jpg', 'py.jpg', 'ny.jpg', 'pz.jpg', 'nz.jpg' ] );
+
+
+        camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 10000 );
+        camera.position.z = 1000;
+
+        particles = new THREE.Object3D();;
+        scene.add(particles);
+
+
+        renderer = new THREE.WebGLRenderer();
+        renderer.setSize( window.innerWidth, window.innerHeight );
+
+        document.body.appendChild( renderer.domElement );
+
+        cameraControls = new THREE.OrbitControls(camera, renderer.domElement);
+        cameraControls.addEventListener('change', function(){
+            renderer.render(scene, camera);
+        });
+
+        animate();
+    }
+    init();
+    </script>
+</html>
